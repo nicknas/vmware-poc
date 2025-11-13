@@ -1,5 +1,6 @@
 - name: Test VMware collection
   hosts: localhost
+  connection: local
   gather_facts: false
   tasks:
     - name: Get vCenter version
