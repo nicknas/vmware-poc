@@ -1,0 +1,28 @@
+---
+- name: Add new virtual disk to VM
+  community.vmware.vmware_guest_disk:
+    datacenter: "{{ datacenter }}"
+    name: "{{ vm_name }}"
+    disk:
+      - size_gb: "{{ disk_size_gb }}"
+        state: present
+        type: "{{ disk_type }}"
+        datastore: "{{ target_datastore }}"
+        scsi_controller: "{{ scsi_controller }}"
+        unit_number: "{{ next_unit_number }}"
+        disk_mode: "{{ disk_mode }}"
+  register: add_disk_result
+
+- name: Show result summary
+  ansible.builtin.debug:
+    msg: |
+      New virtual disk added successfully!
+      ──────────────────────────────────────
+      VM Name: {{ vm_name }}
+      Disk Size: {{ disk_size_gb }} GB
+      Disk Type: {{ disk_type }}
+      Datastore: {{ target_datastore }}
+      SCSI Controller: {{ scsi_controller }}
+      Unit Number: {{ next_unit_number }}
+      ──────────────────────────────────────
+      Result: {{ add_disk_result.msg | default('Operation completed successfully.') }}

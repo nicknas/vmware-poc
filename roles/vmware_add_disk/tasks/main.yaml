@@ -1,0 +1,7 @@
+---
+- name: Include check task
+  ansible.builtin.include_tasks: check_vm_disk.yml
+
+- name: Include add-disk task
+  ansible.builtin.include_tasks: add_vm_disk.yml
+

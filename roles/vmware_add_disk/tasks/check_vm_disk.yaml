@@ -1,0 +1,33 @@
+---
+- name: Gather current VM disk info
+  community.vmware.vmware_guest_disk_info:
+    name: "{{ vm_name }}"
+  register: vm_disks
+
+- name: Extract disk information and determine next available SCSI/unit
+  ansible.builtin.set_fact:
+    current_disks: "{{ vm_disks.guest_disk_info }}"
+    used_unit_numbers: "{{ vm_disks.guest_disk_info | map(attribute='unit_number') | list }}"
+    used_controllers: "{{ vm_disks.guest_disk_info | map(attribute='controller_key') | list | unique }}"
+    scsi_controller: "{{ (used_controllers | sort | last) | default(0) }}"
+    next_unit_number: "{{ (used_unit_numbers | sort | last | int) + 1 if used_unit_numbers | length > 0 else 0 }}"
+    target_datastore: >-
+      {{
+        disk_datastore
+        if disk_datastore | length > 0
+        else (vm_disks.guest_disk_info[0].backing_datastore if vm_disks.guest_disk_info | length > 0 else 'undefined')
+      }}
+
+- name: Show detected VM disk summary
+  ansible.builtin.debug:
+    msg:
+      - "Total disks found: {{ current_disks | length }}"
+      - "Datastores in use: {{ current_disks | map(attribute='backing_datastore') | list | unique }}"
+      - "Next SCSI controller: {{ scsi_controller }}"
+      - "Next unit number: {{ next_unit_number }}"
+      - "Datastore selected for new disk: {{ target_datastore }}"
+
+- name: Show detailed disk list
+  ansible.builtin.debug:
+    var: current_disks
+

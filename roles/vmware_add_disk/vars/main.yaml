@@ -1,0 +1,6 @@
+---
+datacenter: "SDDC-Datacenter"
+disk_type: "{{ disk_type | default('thin') }}"
+disk_mode: "{{ disk_mode | default('persistent') }}"
+vm_name: ""
+disk_size_gb: ""

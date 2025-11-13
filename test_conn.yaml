@@ -1,0 +1,26 @@
+- name: Test VMware collection
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  collections:
+    - community.vmware
+
+  vars:
+    vcenter_hostname: '{{ lookup("env", "VMWARE_HOST") }}'
+    vcenter_user: '{{ lookup("env", "VMWARE_USER") }}'
+    vcenter_password: '{{ lookup("env", "VMWARE_PASSWORD") }}'
+
+  tasks:
+    - name: Get vCenter version
+      community.vmware.vmware_about_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"      
+        validate_certs: false
+      register: about
+
+    - name: Show vCenter information
+      debug:
+        var: about
+
