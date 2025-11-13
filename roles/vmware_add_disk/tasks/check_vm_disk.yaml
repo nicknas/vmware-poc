@@ -14,6 +14,13 @@
         else []
       }}
 
+
+- name: Show detected VM disk summary
+  ansible.builtin.debug:
+    msg:
+      - "{{ disk_list | map(attribute='controller_key') | list }}"
+
+
 - name: Calculate next SCSI controller and unit number
   ansible.builtin.set_fact:
     used_unit_numbers: "{{ disk_list | map(attribute='unit_number') | list }}"
