@@ -6,12 +6,23 @@
   collections:
     - community.vmware
 
+  vars:
+    vcenter_hostname: "vcsnsx-vc.infra.demo.redhat.com"
+    vcenter_user: "sandbox-xdlf9@demo"
+    vcenter_password: "e.lVsWlgQx31"
+
   tasks:
     - name: Get vCenter version
       community.vmware.vmware_about_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"      
         validate_certs: false
       register: about
 
-    - debug:
-        var: about
+    - name: Show vCenter information
+      debug:
+        msg: >
+          Connected to vCenter {{ about.instance.fullName }}
+          (API version: {{ about.instance.apiVersion }})
 
