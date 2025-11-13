@@ -14,15 +14,15 @@
         else []
       }}
 
-- name: Show detected VM disk summary
-  ansible.builtin.debug:
-    msg: "{{ disk_list | map(attribute='controller_key') | first }}"
+#- name: Show detected VM disk summary
+#  ansible.builtin.debug:
+#    msg: "{{ disk_list | map(attribute='controller_key') | first }}"
 
 
 - name: Calculate next SCSI controller and unit number
   ansible.builtin.set_fact:
     used_unit_numbers: "{{ disk_list | map(attribute='unit_number') | list }}"
-    used_controllers: "{{ disk_list | map(attribute='controller_key') | default(1000) }}"
+    used_controllers: "{{ disk_list | map(attribute='controller_key') | first | default(1000) }}"
     scsi_controller: "{{ (used_controllers | sort | last) | int }}"    
     next_unit_number: "{{ (used_unit_numbers | sort | last | int) + 1 if used_unit_numbers | length > 0 else 0 }}"
     target_datastore: >-
