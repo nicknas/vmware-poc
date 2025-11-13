@@ -22,7 +22,5 @@
 
     - name: Show vCenter information
       debug:
-        msg: >
-          Connected to vCenter {{ about.instance.fullName }}
-          (API version: {{ about.instance.apiVersion }})
+        var: about
 
