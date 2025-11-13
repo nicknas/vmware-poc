@@ -5,19 +5,20 @@
     name: "{{ vm_name }}"
   register: vm_disks
 
-- name: Extract disk information and determine next available SCSI/unit
+- name: Calculate next SCSI controller and unit number
   ansible.builtin.set_fact:
-    current_disks: "{{ vm_disks.guest_disk_info }}"
-    used_unit_numbers: "{{ vm_disks.guest_disk_info | map(attribute='unit_number') | list }}"
-    used_controllers: "{{ vm_disks.guest_disk_info | map(attribute='controller_key') | list | unique }}"
+    disk_list: "{{ vm_disks.guest_disk_info.values() | list }}"
+    used_unit_numbers: "{{ disk_list | map(attribute='unit_number') | list }}"
+    used_controllers: "{{ disk_list | map(attribute='controller_key') | list | unique }}"
     scsi_controller: "{{ (used_controllers | sort | last) | default(0) }}"
     next_unit_number: "{{ (used_unit_numbers | sort | last | int) + 1 if used_unit_numbers | length > 0 else 0 }}"
     target_datastore: >-
       {{
         disk_datastore
         if disk_datastore | length > 0
-        else (vm_disks.guest_disk_info[0].backing_datastore if vm_disks.guest_disk_info | length > 0 else 'undefined')
+        else (disk_list[0].backing_datastore if disk_list | length > 0 else 'undefined')
       }}
+    current_disks: "{{ disk_list }}"
 
 - name: Show detected VM disk summary
   ansible.builtin.debug:
