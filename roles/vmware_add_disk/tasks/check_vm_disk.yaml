@@ -41,7 +41,3 @@
       - "Next unit number: {{ next_unit_number }}"
       - "Datastore selected for new disk: {{ target_datastore }}"          
 
-- name: Show detailed disk list
-  ansible.builtin.debug:
-    var: current_disks
-
