@@ -16,7 +16,8 @@
 
 - name: Extract controller and unit numbers
   ansible.builtin.set_fact:
-    used_unit_numbers: "{{ disk_list[0].unit_number }}"
+    #used_unit_numbers: "{{ disk_list[0].unit_number }}"
+    used_unit_numbers: "{{ (disk_list | map(attribute='unit_number') | list | sort | last | int) + 1 }}"
     used_controllers:  "{{ disk_list[0].controller_bus_number | default(0) }}"
 
 - name: Calculate next SCSI controller and unit number
