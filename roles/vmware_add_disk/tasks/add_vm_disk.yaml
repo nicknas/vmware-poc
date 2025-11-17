@@ -16,13 +16,13 @@
 - name: Show result summary
   ansible.builtin.debug:
     msg: 
-      - New virtual disk added successfully!
-      - ──────────────────────────────────────
-      - VM Name: {{ vm_name }}
-      - Disk Size: {{ disk_size_gb }}GB
-      - Disk Type: {{ disk_type }}
-      - Datastore: {{ target_datastore }}
-      - SCSI Controller: {{ scsi_controller }}
-      - Unit Number: {{ next_unit_number }}
-      - ──────────────────────────────────────
-      - Result: {{ add_disk_result.msg | default('Operation completed successfully.') }}
+      - "New virtual disk added successfully!"
+      - "──────────────────────────────────────"
+      - "VM Name: {{ vm_name }}"
+      - "Disk Size: {{ disk_size_gb }} GB"
+      - "Disk Type: {{ disk_type }}"
+      - "Datastore: {{ target_datastore }}"
+      - "SCSI Controller: {{ scsi_controller }}"
+      - "Unit Number: {{ next_unit_number }}"
+      - "──────────────────────────────────────"
+      - "Result: {{ add_disk_result.msg | default('Operation completed successfully.') }}"
