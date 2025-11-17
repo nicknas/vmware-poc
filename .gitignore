@@ -1,4 +1,17 @@
 # ignore test files
-\test_conn.yaml
+test_conn.yaml
 *.log
 *.json
+
+# macOS
+.DS_Store
+
+# backup editor
+*~
+
+# temps y logs
+*.log
+*.tmp
+*.bak
+*.swp
+
