@@ -15,7 +15,7 @@
 
 - name: Show result summary
   ansible.builtin.debug:
-    msg: |-
+    msg: 
       - New virtual disk added successfully!
       - ──────────────────────────────────────
       - VM Name: {{ vm_name }}
