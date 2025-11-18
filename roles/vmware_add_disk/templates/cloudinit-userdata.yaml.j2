@@ -1,8 +1,27 @@
 #cloud-config
 
-{% set disk_letter = (97 + next_unit_number) | int | chr %}
+{% set disk_map = {
+  0: 'a',
+  1: 'b',
+  2: 'c',
+  3: 'd',
+  4: 'e',
+  5: 'f',
+  6: 'g',
+  7: 'h',
+  8: 'i',
+  9: 'j',
+  10: 'k',
+  11: 'l',
+  12: 'm',
+  13: 'n',
+  14: 'o',
+  15: 'p'
+} %}
+
+{% set disk_letter = disk_map.get(next_unit_number, 'b') %}
 {% set device = "/dev/sd" ~ disk_letter %}
-{% set pv = device %}
+{% set pv = device ~ "1" %}
 {% set vg = "vg_data" %}
 {% set lv = "lv_data" %}
 {% set lvpath = "/dev/" ~ vg ~ "/" ~ lv %}
@@ -16,63 +35,60 @@ write_files:
       set -e
 
       DEVICE="{{ device }}"
-      PV="{{ pv }}"
+      PART="{{ pv }}"
       VG="{{ vg }}"
       LV="{{ lv }}"
       LV_PATH="{{ lvpath }}"
       MOUNTPOINT="{{ mountpoint }}"
 
-      echo "[INFO] Using device: $DEVICE"
+      echo "[INFO] Disk device detected: ${DEVICE}"
 
-      # Wait for disk to be available
+      # Wait for device to appear
       for i in {1..10}; do
-          if lsblk "$DEVICE"; then
-              break
-          fi
-          sleep 1
+        if lsblk ${DEVICE} &>/dev/null; then
+          break
+        fi
+        sleep 1
       done
 
-      # Create partition table if needed
+      # Create partition if missing
       if ! lsblk ${DEVICE}1 &>/dev/null; then
-          echo "[INFO] Creating GPT partition table"
-          parted -s $DEVICE mklabel gpt
-          parted -s $DEVICE mkpart primary 0% 100%
-          sleep 2
+        echo "[INFO] Creating GPT partition table"
+        parted -s ${DEVICE} mklabel gpt
+        parted -s ${DEVICE} mkpart primary xfs 0% 100%
+        sleep 2
       fi
-
-      PART="${DEVICE}1"
 
       # Create PV
-      if ! pvs $PART &>/dev/null; then
-          pvcreate $PART
+      if ! pvs ${PART} &>/dev/null; then
+        pvcreate ${PART}
       fi
 
-      # Create or extend VG
-      if ! vgs $VG &>/dev/null; then
-          vgcreate $VG $PART
+      # Create VG or extend existing one
+      if ! vgs ${VG} &>/dev/null; then
+        vgcreate ${VG} ${PART}
       else
-          vgextend $VG $PART || true
+        vgextend ${VG} ${PART} || true
       fi
 
-      # Create LV if not exists
-      if ! lvs $LV_PATH &>/dev/null; then
-          lvcreate -l 100%FREE -n $LV $VG
+      # Create LV if not present
+      if ! lvs ${LV_PATH} &>/dev/null; then
+        lvcreate -l 100%FREE -n ${LV} ${VG}
       fi
 
-      # Create filesystem XFS
-      if ! blkid $LV_PATH | grep -q xfs; then
-          mkfs.xfs $LV_PATH
+      # Create filesystem
+      if ! blkid ${LV_PATH} | grep -q xfs; then
+        mkfs.xfs ${LV_PATH}
       fi
 
-      mkdir -p $MOUNTPOINT
+      mkdir -p ${MOUNTPOINT}
 
-      # Add to fstab if not exists
-      if ! grep -qs "$LV_PATH" /etc/fstab; then
-          echo "$LV_PATH $MOUNTPOINT xfs defaults 0 0" >> /etc/fstab
+      # Add to fstab if needed
+      if ! grep -qs "${LV_PATH}" /etc/fstab; then
+        echo "${LV_PATH} ${MOUNTPOINT} xfs defaults 0 0" >> /etc/fstab
       fi
 
       mount -a
-
 
 runcmd:
   - [ bash, /usr/local/bin/configure_lvm.sh ]
