@@ -11,4 +11,4 @@
   ansible.builtin.include_tasks: cloud_init.yaml
   when:
     - cloud_init == "True"
-    - disk_status == "true"
+    - disk_status == 'true'
