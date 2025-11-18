@@ -10,13 +10,17 @@
     dest: /tmp/metadata.yaml
 
 - name: Apply cloud-init guestinfo
-  community.vmware.vmware_guest_extra_config:
+  community.vmware.vmware_guest:
     datacenter: "{{ datacenter }}"
     name: "{{ vm_name }}"
     state: present
-    extra_config:
-      "guestinfo.userdata": "{{ lookup('file', '/tmp/userdata.yaml') | b64encode }}"
-      "guestinfo.userdata.encoding": "base64"
-      "guestinfo.metadata": "{{ lookup('file','/tmp/metadata.yaml') | b64encode }}"
-      "guestinfo.metadata.encoding": "base64"
+    advanced_settings:
+      - key: "guestinfo.userdata"
+        value: "{{ lookup('file', '/tmp/userdata.yaml') | b64encode }}"
+      - key: "guestinfo.userdata.encoding"
+        value: "base64"
+      - key: "guestinfo.metadata"
+        value: "{{ lookup('file', '/tmp/metadata.yaml') | b64encode }}"
+      - key: "guestinfo.metadata.encoding"
+        value: "base64"
 
