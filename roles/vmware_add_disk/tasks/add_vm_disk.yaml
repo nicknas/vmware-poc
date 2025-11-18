@@ -30,4 +30,4 @@
       
 - name: Show result summary
   ansible.builtin.debug:
-    msg: "{{ add_disk_result }}"
+    msg: "{{ add_disk_result.msg.changed }}"
