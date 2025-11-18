@@ -13,13 +13,9 @@
   community.vmware.vmware_guest:
     name: "{{ vm_name }}"
     state: present
-    customvalues:
-      - key: "guestinfo.userdata"
-        value: "{{ lookup('file','/tmp/userdata.yaml') | b64encode }}"
-      - key: "guestinfo.userdata.encoding"
-        value: "base64"
-      - key: "guestinfo.metadata"
-        value: "{{ lookup('file','/tmp/metadata.yaml') | b64encode }}"
-      - key: "guestinfo.metadata.encoding"
-        value: "base64"
+    extra_config:
+      "guestinfo.userdata": "{{ lookup('file', '/tmp/userdata.yaml') | b64encode }}"
+      "guestinfo.userdata.encoding": "base64"
+      "guestinfo.metadata": "{{ lookup('file','/tmp/metadata.yaml') | b64encode }}"
+      "guestinfo.metadata.encoding": "base64"
 
