@@ -1,0 +1,18 @@
+---
+
+- name: Map unit_number to Linux disk letter
+  ansible.builtin.set_fact:
+    lvm_disk_path: "/dev/sd{{ disk_letter_map[lvm_unit_number] }}"
+
+- name: Ensure new disk is available
+  wait_for:
+    path: "{{ lvm_disk_path }}"
+    timeout: 30
+
+- name: Extend existing LVM
+  ansible.builtin.include_tasks: extend_lvm.yaml
+  when: lvm_action == "extend"
+
+- name: Create new PV/VG/LV
+  ansible.builtin.include_tasks: create_lvm.yaml
+  when: lvm_action == "create"

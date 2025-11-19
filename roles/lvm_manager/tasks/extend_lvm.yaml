@@ -1,0 +1,30 @@
+---
+
+- name: Ensure partition exists
+  community.general.parted:
+    device: "{{ lvm_disk_path }}"
+    number: 1
+    label: gpt
+    state: present
+
+- name: Ensure PV exists
+  community.general.lvol:
+    pv: "{{ lvm_disk_path}}1"
+    vg: "{{ vg_name }}"
+    state: present
+
+- name: Extend VG
+  community.general.lvg:
+    vg: "{{ vg_name }}"
+    pvs:
+      - "{{ lvm_disk_path }}1"
+    state: present
+
+- name: Extend LV
+  community.general.lvol:
+    vg: "{{ vg_name }}"
+    lv: "{{ lv_name }}"
+    size: "100%FREE"
+    resizefs: yes
+    state: present
+
