@@ -3,4 +3,3 @@ collections:
   - name: community.vmware
   - name: community.general
   - name: ansible.posix
-  - name: ansible.builtin
