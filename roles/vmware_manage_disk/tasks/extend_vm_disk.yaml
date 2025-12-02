@@ -1,6 +1,6 @@
 ---
 - name: Get info about the VM's current disks
-  vmware_guest_disk_info:
+  community.vmware.vmware_guest_disk_info:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
@@ -10,7 +10,7 @@
   register: vm_disk_facts
 
 - name: Find the specific disk by Controller and Unit Number
-  set_fact:
+  ansible.builtin.set_fact:
     # We convert the dict to a list (.values()) and filter by your survey inputs
     target_disk_data: >-
       {{
@@ -30,7 +30,7 @@
       Available disks: {{ vm_disk_facts.guest_disk_info.values() | map(attribute='label') | list }}
 
 - name: Get info about the Datastore (for space check)
-  vmware_datastore_info:
+  community.vmware.vmware_datastore_info:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
@@ -60,7 +60,7 @@
         fail_msg: "Not enough space on {{ target_disk_data.backing_datastore }}. Needed: {{ extension_needed_gb }}GB, Available: {{ free_space_gb }}GB."
 
 - name: Extend the VM Disk
-  vmware_guest_disk:
+  community.vmware.vmware_guest_disk:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
