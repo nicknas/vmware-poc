@@ -1,12 +1,12 @@
 ---
-- name: Add New Disk
+- name: Manage Disk
   hosts: localhost
   connection: localt
   gather_facts: false
   collections:
     - community.vmware
   roles:
-    - role: vmware_add_disk
+    - role: vmware_manage_disk
       vars:
         vcenter_hostname: '{{ lookup("env", "VMWARE_HOST") }}'
         vcenter_user: '{{ lookup("env", "VMWARE_USER") }}'

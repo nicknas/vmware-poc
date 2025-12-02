@@ -4,3 +4,5 @@ disk_type: "{{ disk_type | default('thin') }}"
 disk_mode: "{{ disk_mode | default('persistent') }}"
 vm_name: ""
 disk_size_gb: ""
+scsi_controller: 0
+unit_number: 0  # 0 is usually the OS disk

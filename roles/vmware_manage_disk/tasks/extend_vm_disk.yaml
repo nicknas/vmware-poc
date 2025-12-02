@@ -1,0 +1,90 @@
+---
+- name: Get info about the VM's current disks
+  vmware_guest_disk_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ validate_certs }}"
+    datacenter: "{{ datacenter }}"
+    name: "{{ vm_name }}"
+  register: vm_disk_facts
+
+- name: Find the specific disk by Controller and Unit Number
+  set_fact:
+    # We convert the dict to a list (.values()) and filter by your survey inputs
+    target_disk_data: >-
+      {{
+        vm_disk_facts.guest_disk_info.values()
+        | selectattr('controller_bus_number', 'equalto', scsi_controller | int)
+        | selectattr('unit_number', 'equalto', unit_number | int)
+        | first | default(none)
+      }}
+
+- name: "VALIDATION: Check if Disk Exists"
+  assert:
+    that:
+      - target_disk_data is not none
+    fail_msg: >-
+      Disk not found! No disk exists on VM '{{ vm_name }}' 
+      at SCSI Controller {{ scsi_controller }} : Unit {{ unit_number }}.
+      Available disks: {{ vm_disk_facts.guest_disk_info.values() | map(attribute='label') | list }}
+
+- name: Get info about the Datastore (for space check)
+  vmware_datastore_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ validate_certs }}"
+    datacenter: "{{ datacenter }}"
+    name: "{{ target_disk_data.backing_datastore }}"
+  register: datastore_facts
+
+- name: Calculate space requirements
+  vars:
+    # Convert KB to GB
+    current_size_gb: "{{ target_disk_data.capacity_in_kb | int / 1024 / 1024 }}"
+    # Datastore info returns a list, we take the first match
+    free_space_gb: "{{ datastore_facts.datastores[0].freeSpace | int / 1024 / 1024 / 1024 }}"
+    extension_needed_gb: "{{ disk_size_gb | int - current_size_gb | float }}"
+  block:
+    - name: "Check: Is target size larger than current size?"
+      assert:
+        that: 
+          - "disk_size_gb | int > current_size_gb | float"
+        fail_msg: "Target size ({{ disk_size_gb }}GB) is not larger than current size ({{ current_size_gb }}GB)."
+
+    - name: "Check: Is there enough space on Datastore?"
+      assert:
+        that:
+          - "free_space_gb | float > extension_needed_gb | float"
+        fail_msg: "Not enough space on {{ target_disk_data.backing_datastore }}. Needed: {{ extension_needed_gb }}GB, Available: {{ free_space_gb }}GB."
+
+- name: Extend the VM Disk
+  vmware_guest_disk:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ validate_certs }}"
+    datacenter: "{{ datacenter }}"
+    name: "{{ vm_name }}"
+    disk:
+      - size_gb: "{{ disk_size_gb }}"
+        scsi_controller: "{{ scsi_controller }}"
+        unit_number: "{{ unit_number }}"
+        state: present
+  register: disk_extend_result
+
+- name: Show result summary
+  ansible.builtin.debug:
+    msg: 
+      - "Virtual disk extended successfully!"
+      - "──────────────────────────────────────"
+      - "VM Name: {{ vm_name }}"
+      - "Disk Size: {{ disk_size_gb }} GB"
+      - "Disk Type: {{ disk_type }}"
+      - "Datastore: {{ target_disk_data.backing_datastore }}"
+      - "SCSI Controller: {{ scsi_controller }}"
+      - "Unit Number: {{ unit_number }}"
+      - "──────────────────────────────────────"
+      - "Result: {{ extend_disk_result.msg | default('Operation completed successfully.') }}"
+

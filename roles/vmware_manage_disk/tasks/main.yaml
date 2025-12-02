@@ -1,0 +1,12 @@
+---
+- name: Add Disk task
+  ansible.builtin.include_tasks: add_vm_disk.yaml
+  when: disk_action == "add"
+
+- name: Extend Disk task
+  ansible.builtin.include_tasks: extend_vm_disk.yaml
+  when: disk_action == "extend"
+
+#- name: Include Cloud-Init task  
+#  ansible.builtin.include_tasks: cloud_init.yaml
+#  when: cloud_init == "True" and add_disk_result.changed 
