@@ -1,5 +1,4 @@
 ---
-
 - name: Verify Thin Pool existence
   command: "lvs {{ vg_name }}/{{ thin_pool }} --noheadings"
   register: thin_pool_check
