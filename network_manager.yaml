@@ -1,0 +1,14 @@
+---
+- name: Manage Network
+  hosts: localhost
+  connection: localt
+  gather_facts: false
+  collections:
+    - community.vmware
+  roles:
+    - role: vmware_manage_network
+      vars:
+        vcenter_hostname: '{{ lookup("env", "VMWARE_HOST") }}'
+        vcenter_user: '{{ lookup("env", "VMWARE_USER") }}'
+        vcenter_password: '{{ lookup("env", "VMWARE_PASSWORD") }}'
+        validate_certs: 'false'

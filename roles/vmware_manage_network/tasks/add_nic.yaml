@@ -1,0 +1,45 @@
+---
+# tasks/add_nic.yml
+
+- name: Add Network Interface via vCenter (Delegated)
+  # Adds the NIC without modifying existing hardware configuration
+  community.vmware.vmware_guest_network:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    name: "{{ inventory_hostname }}" # Assumes inventory name matches VM name
+    network_name: "{{ target_network_label }}"
+    device_type: "{{ nic_device_type }}"
+    state: present
+    connected: true
+  delegate_to: localhost
+  register: nic_result
+
+- name: Gather VM Facts from vCenter
+  # We need to refresh vCenter info to get the generated MAC address
+  community.vmware.vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    name: "{{ inventory_hostname }}"
+  delegate_to: localhost
+  register: vm_info
+
+- name: Extract New MAC Address
+  # Filters the hardware list to find the MAC associated with the target network label
+  ansible.builtin.set_fact:
+    expected_mac_address: >-
+      {{ 
+        vm_info.instance.hw_eth 
+        | selectattr('label', 'equalto', target_network_label) 
+        | map(attribute='macaddress') 
+        | list 
+        | last 
+      }}
+  delegate_to: localhost
+
+- name: Debug - Expected MAC
+  ansible.builtin.debug:
+    msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ target_network_label }}"

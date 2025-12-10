@@ -1,0 +1,5 @@
+---
+vm_name: ""
+nic_device_type: ""
+new_network_label: 0
+connection_timeout: 60
