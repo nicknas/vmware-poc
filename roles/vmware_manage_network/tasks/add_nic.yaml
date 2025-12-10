@@ -5,7 +5,7 @@
   # Adds the NIC without modifying existing hardware configuration
   community.vmware.vmware_guest_network:
     hostname: "{{ vcenter_hostname }}"
-    username: "{{ vcenter_username }}"
+    username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ inventory_hostname }}" # Assumes inventory name matches VM name
@@ -20,7 +20,7 @@
   # We need to refresh vCenter info to get the generated MAC address
   community.vmware.vmware_guest_info:
     hostname: "{{ vcenter_hostname }}"
-    username: "{{ vcenter_username }}"
+    username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ inventory_hostname }}"

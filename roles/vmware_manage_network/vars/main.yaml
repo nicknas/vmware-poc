@@ -1,5 +1,5 @@
 ---
 vm_name: ""
-nic_device_type: ""
+nic_device_type: "vmxnet3"
 new_network_label: ""
 connection_timeout: 60
