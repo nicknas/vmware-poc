@@ -9,7 +9,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ inventory_hostname }}" # Assumes inventory name matches VM name
-    network_name: "{{ target_network_label }}"
+    network_name: "{{ network_label }}"
     device_type: "{{ nic_device_type }}"
     state: present
     connected: true
@@ -20,7 +20,7 @@
   # We need to refresh vCenter info to get the generated MAC address
   community.vmware.vmware_guest_info:
     hostname: "{{ vcenter_hostname }}"
-    username: "{{ vcenter_user }}"
+    username: "{{ vcenter_username }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ inventory_hostname }}"
@@ -33,7 +33,7 @@
     expected_mac_address: >-
       {{ 
         vm_info.instance.hw_eth 
-        | selectattr('label', 'equalto', target_network_label) 
+        | selectattr('label', 'equalto', network_label) 
         | map(attribute='macaddress') 
         | list 
         | last 
@@ -42,4 +42,4 @@
 
 - name: Debug - Expected MAC
   ansible.builtin.debug:
-    msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ target_network_label }}"
+    msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ network_label }}"
