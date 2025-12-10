@@ -7,7 +7,6 @@
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
-    validate_certs: false
     name: "{{ vm_name }}"
     datacenter: "{{ datacenter }}"
     network_name: "{{ network_label }}"
@@ -23,22 +22,20 @@
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user}}"
     password: "{{ vcenter_password }}"
-    validate_certs: false
     name: "{{ vm_name }}"
     datacenter: "{{ datacenter }}"
   delegate_to: localhost
   register: vm_info
 
-- name: Extract New MAC Address
-  # Filters the hardware list to find the MAC associated with the target network label
+- name: Extract New MAC Address (From network_info)
   ansible.builtin.set_fact:
     expected_mac_address: >-
-      {{ 
-        vm_info.instance.hw_eth 
-        | selectattr('label', 'equalto', network_label) 
-        | map(attribute='macaddress') 
-        | list 
-        | last 
+      {{
+        nic_result.network_info
+        | selectattr('network_name', 'equalto', network_label)
+        | map(attribute='mac_address')
+        | list
+        | first
       }}
   delegate_to: localhost
 
