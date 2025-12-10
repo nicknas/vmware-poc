@@ -9,7 +9,8 @@
     password: "{{ vcenter_password }}"
     name: "{{ vm_name }}"
     datacenter: "{{ datacenter }}"
-    network_name: "{{ network_label }}"
+    network_name: "{{ network_name }}"
+    label: "{{ adapter_label }}"
     device_type: "{{ nic_device_type }}"
     state: present
     connected: true
@@ -32,7 +33,7 @@
     expected_mac_address: >-
       {{
         nic_result.network_info
-        | selectattr('network_name', 'equalto', network_label)
+        | selectattr('label', 'equalto', adapter_label)
         | map(attribute='mac_address')
         | list
         | first
@@ -41,4 +42,4 @@
 
 - name: Debug - Expected MAC
   ansible.builtin.debug:
-    msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ network_label }}"
+    msg: "vCenter assigned MAC {{ expected_mac_address }} to label {{ adapter_label }}"

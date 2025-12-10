@@ -1,20 +1,26 @@
 ---
 # tasks/verify_nic.yml
 
-- name: Wait for Connection Stability
-  # Ensures SSH/WinRM is stable after potential hot-plug events
+- name: Wait for connection and Guest OS stabilization
+  # Hot-plugging hardware might take a few seconds for the kernel to register.
   ansible.builtin.wait_for_connection:
-    timeout: "{{ connection_timeout }}"
+    timeout: "{{ connection_timeout | default(60) }}"
 
 - name: Refresh Guest OS Network Facts
-  # Forces Ansible to re-scan network interfaces to see the new hardware
+  # We must force a fact gathering now because the initial playbook facts 
+  # (if gathered) would not contain the new NIC.
+  # We use 'gather_subset: network' for performance.
   ansible.builtin.setup:
-    filter: "ansible_*"
+    gather_subset:
+      - network
 
-- name: Verify MAC Address Presence
-  # Asserts that the MAC from vCenter exists in the OS facts
+- name: Assert that the new MAC address is present in the OS
   ansible.builtin.assert:
     that:
-      - expected_mac_address | lower in ansible_facts.values() | selectattr('macaddress', 'defined') | map(attribute='macaddress') | list
-    fail_msg: "FAILURE: MAC {{ expected_mac_address }} not found in guest OS."
-    success_msg: "SUCCESS: MAC {{ expected_mac_address }} confirmed in guest OS."
+      # Compare the vCenter MAC (converted to lower case) against all MACs 
+      # found in the OS (also converted to lower case).
+      - "expected_mac_address | lower in ansible_facts.values() | selectattr('macaddress', 'defined') | map(attribute='macaddress') | map('lower') | list"
+    fail_msg: >-
+      FAILURE: The MAC {{ expected_mac_address }} was NOT found in the Guest OS.
+      Visible MACs: {{ ansible_facts.values() | selectattr('macaddress', 'defined') | map(attribute='macaddress') | list }}
+    success_msg: "SUCCESS: The interface with MAC {{ expected_mac_address }} has been successfully detected by the OS."
