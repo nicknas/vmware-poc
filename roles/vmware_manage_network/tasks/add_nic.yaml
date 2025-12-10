@@ -24,6 +24,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ vm_name }}"
+    datacenter: "{{ datacenter }}"
   delegate_to: localhost
   register: vm_info
 

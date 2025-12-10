@@ -4,4 +4,5 @@ nic_device_type: "vmxnet3"
 network_label: "segment-sandbox-bgbft"
 vlan_id: 20
 vds_name: "vcsnsx-vcs-shared-private"
+datacenter: "SDDC-Datacenter"
 connection_timeout: 60
