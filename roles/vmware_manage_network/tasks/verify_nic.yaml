@@ -14,13 +14,31 @@
     gather_subset:
       - network
 
+- name: DEBUG - Mostrar interfaces detectadas
+  ansible.builtin.debug:
+    msg: 
+      - "Interfaces listadas: {{ ansible_interfaces }}"
+      # Esto mostrará la estructura completa de la primera interfaz para ver dónde está la MAC
+      - "Ejemplo de datos de la primera interfaz: {{ ansible_facts[ansible_interfaces[0]] | default('No data') }}"
+
+- name: Collect all MAC addresses (Linux/Unix logic)
+  ansible.builtin.set_fact:
+    detected_macs: >-
+      {{
+        ansible_interfaces
+        | map('extract', ansible_facts)
+        | selectattr('macaddress', 'defined')
+        | map(attribute='macaddress')
+        | map('lower')
+        | list
+      }}
+    when: ansible_os_family != 'Windows'
+
 - name: Assert that the new MAC address is present in the OS
   ansible.builtin.assert:
     that:
-      # Compare the vCenter MAC (converted to lower case) against all MACs 
-      # found in the OS (also converted to lower case).
-      - "expected_mac_address | lower in ansible_facts.values() | selectattr('macaddress', 'defined') | map(attribute='macaddress') | map('lower') | list"
+      - "expected_mac_address | lower in detected_macs"
     fail_msg: >-
-      FAILURE: The MAC {{ expected_mac_address }} was NOT found in the Guest OS.
-      Visible MACs: {{ ansible_facts.values() | selectattr('macaddress', 'defined') | map(attribute='macaddress') | list }}
-    success_msg: "SUCCESS: The interface with MAC {{ expected_mac_address }} has been successfully detected by the OS."
+      FAILURE: La MAC {{ expected_mac_address }} no aparece en el SO.
+      MACs encontradas: {{ detected_macs }}
+    success_msg: "SUCCESS: La interfaz con MAC {{ expected_mac_address }} ha sido detectada correctamente."

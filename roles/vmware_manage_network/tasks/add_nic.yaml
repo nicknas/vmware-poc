@@ -10,7 +10,7 @@
     name: "{{ vm_name }}"
     datacenter: "{{ datacenter }}"
     network_name: "{{ network_name }}"
-    label: ""
+    label: "label"
     device_type: "{{ nic_device_type }}"
     state: present
     connected: true
@@ -36,7 +36,7 @@
         | selectattr('network_name', 'equalto', network_name)
         | map(attribute='mac_address')
         | list
-        | last
+        | first
       }}
   delegate_to: localhost
 
