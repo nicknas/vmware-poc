@@ -20,7 +20,7 @@
   # We need to refresh vCenter info to get the generated MAC address
   community.vmware.vmware_guest_info:
     hostname: "{{ vcenter_hostname }}"
-    username: "{{ vcenter_username }}"
+    username: "{{ vcenter_user}}"
     password: "{{ vcenter_password }}"
     validate_certs: false
     name: "{{ vm_name }}"
