@@ -2,7 +2,6 @@
 vm_name: ""
 nic_device_type: "vmxnet3"
 network_name: "segment-sandbox-bgbft"
-adapter_label: "Test-NIC"
 vlan_id: 20
 vds_name: "vcsnsx-vcs-shared-private"
 datacenter: "SDDC-Datacenter"
