@@ -11,7 +11,7 @@
     switch_name: "{{ vds_name }}"
     vlan_id: "{{ vlan_id }}"
     num_ports: 128            # Optional: Defines port capacity
-    portgroup_type: earlyBinding # Standard for static port binding
+    port_binding: static      # Standard for static port binding
     state: present
   delegate_to: localhost
   register: portgroup_creation
