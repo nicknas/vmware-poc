@@ -1,10 +1,10 @@
 ---
+- name: Create Network
+  ansible.builtin.include_tasks: create_network.yaml
+  when: create_network == "True"
+
 - name: Add Network Interface
   ansible.builtin.include_tasks: add_nic.yaml
 
 - name: Validate Network Interface on the VM
   ansible.builtin.include_tasks: verify_nic.yaml
-
-#- name: Include Cloud-Init task  
-#  ansible.builtin.include_tasks: cloud_init.yaml
-#  when: cloud_init == "True" and add_disk_result.changed 
