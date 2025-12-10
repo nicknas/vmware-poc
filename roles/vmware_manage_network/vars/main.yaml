@@ -1,7 +1,7 @@
 ---
 vm_name: ""
 nic_device_type: "vmxnet3"
-network_label: ""
+network_label: "segment-sandbox-bgbft"
 vlan_id: 20
-vds_name: "DSwitch-Main"
+vds_name: "vcsnsx-vcs-shared-private"
 connection_timeout: 60
