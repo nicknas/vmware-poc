@@ -8,7 +8,7 @@
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
-    name: "{{ inventory_hostname }}" # Assumes inventory name matches VM name
+    name: "{{ vm_name }}" # Assumes inventory name matches VM name
     network_name: "{{ network_label }}"
     device_type: "{{ nic_device_type }}"
     state: present
@@ -23,7 +23,7 @@
     username: "{{ vcenter_username }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
-    name: "{{ inventory_hostname }}"
+    name: "{{ vm_name }}"
   delegate_to: localhost
   register: vm_info
 
