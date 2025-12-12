@@ -1,7 +1,7 @@
 ---
 # tasks/add_nic.yml
 
-- name: Add Network Interface via vCenter (Delegated)
+- name: Add Network Interface via vCenter
   # Adds the NIC without modifying existing hardware configuration
   community.vmware.vmware_guest_network:
     hostname: "{{ vcenter_hostname }}"
@@ -17,17 +17,27 @@
   delegate_to: localhost
   register: nic_result
 
-- name: Extract New MAC Address (From network_info)
+- name: Calculate Highest Adapter ID
+  ansible.builtin.set_fact:
+    max_adapter_id: >-
+      {{
+        nic_result.network_info
+        | map(attribute='label')
+        | map('regex_replace', '^Network adapter ', '')
+        | map('int')
+        | max
+      }}
+
+- name: Extract MAC Address of Highest Label
   ansible.builtin.set_fact:
     expected_mac_address: >-
       {{
         nic_result.network_info
-        | selectattr('network_name', 'equalto', network_name)
+        | selectattr('label', 'equalto', 'Network adapter ' ~ max_adapter_id)
         | map(attribute='mac_address')
         | list
-        | last
+        | first
       }}
-  delegate_to: localhost
 
 - name: Gather VM Facts from vCenter
   # We need to refresh vCenter info to get the generated MAC address
