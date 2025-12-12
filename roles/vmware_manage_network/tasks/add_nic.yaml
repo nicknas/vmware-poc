@@ -43,3 +43,35 @@
 - name: Debug - Expected MAC
   ansible.builtin.debug:
     msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ network_name }}"
+
+# -------------------------------------------------------
+# TASK 3: Verification - The 'Zero-Touch' Check
+# Instead of SSHing into the VM, we ask vCenter:
+# "Has the Guest OS (via VMware Tools) reported this MAC address yet?"
+#
+# 'instance.guest_net' contains network data reported by the OS driver.
+# If the MAC is here, the OS has recognized the card and the driver is loaded.
+# -------------------------------------------------------
+- name: Wait for Guest OS to detect the interface (VMware Tools)
+  community.vmware.vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    name: "{{ target_vm_name }}"
+  register: vm_info
+  # Loop Condition:
+  # Keep retrying until 'expected_mac_address' appears inside the 
+  # 'guest_net' list (the OS view of the network).
+  until: >
+    vm_info.instance.guest_net is defined and
+    expected_mac_address in (vm_info.instance.guest_net | map(attribute='mac_address') | list)
+  retries: 20   # Try 20 times
+  delay: 6      # Wait 6 seconds between tries (Total wait: ~2 mins)
+
+# -------------------------------------------------------
+# TASK 4: Final Confirmation (Optional IP Check)
+# -------------------------------------------------------
+- name: Success Message
+  ansible.builtin.debug:
+    msg: "SUCCESS: The OS is UP and has recognized the interface {{ expected_mac_address }}."
