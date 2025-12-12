@@ -14,31 +14,24 @@
     gather_subset:
       - network
 
-- name: DEBUG - Mostrar interfaces detectadas
+- name: Debug - Display detected interfaces
   ansible.builtin.debug:
+    # FIX: We access 'interfaces' via the 'ansible_facts' dictionary.
+    # This prevents the 'undefined variable' error when facts are not injected as top-level vars.
     msg: 
-      - "Interfaces listadas: {{ ansible_interfaces }}"
-      # Esto mostrará la estructura completa de la primera interfaz para ver dónde está la MAC
-      - "Ejemplo de datos de la primera interfaz: {{ ansible_facts[ansible_interfaces[0]] | default('No data') }}"
-
-- name: Collect all MAC addresses (Linux/Unix logic)
-  ansible.builtin.set_fact:
-    detected_macs: >-
-      {{
-        ansible_interfaces
-        | map('extract', ansible_facts)
-        | selectattr('macaddress', 'defined')
-        | map(attribute='macaddress')
-        | map('lower')
-        | list
-      }}
-    when: ansible_os_family != 'Windows'
+      - "Interfaces found: {{ ansible_facts.interfaces | default('None detected') }}"
+      - "Expected MAC: {{ expected_mac_address }}"
 
 - name: Assert that the new MAC address is present in the OS
   ansible.builtin.assert:
     that:
-      - "expected_mac_address | lower in detected_macs"
+      # Verification Logic:
+      # 1. 'ansible_facts.interfaces': Get the list of interface names (e.g., ['eth0', 'ens192']).
+      # 2. 'map('extract', ansible_facts)': Look up the details for each name inside ansible_facts.
+      # 3. 'selectattr': Filter only interfaces that actually have a MAC address.
+      # 4. 'map': Extract the MAC string and convert to lowercase for comparison.
+      - "expected_mac_address | lower in ansible_facts.interfaces | map('extract', ansible_facts) | selectattr('macaddress', 'defined') | map(attribute='macaddress') | map('lower') | list"
     fail_msg: >-
-      FAILURE: La MAC {{ expected_mac_address }} no aparece en el SO.
-      MACs encontradas: {{ detected_macs }}
-    success_msg: "SUCCESS: La interfaz con MAC {{ expected_mac_address }} ha sido detectada correctamente."
+      FAILURE: The MAC {{ expected_mac_address }} was NOT found in the Guest OS.
+      Visible MACs: {{ ansible_facts.interfaces | map('extract', ansible_facts) | selectattr('macaddress', 'defined') | map(attribute='macaddress') | list }}
+    success_msg: "SUCCESS: The interface with MAC {{ expected_mac_address }} has been correctly detected by the OS."

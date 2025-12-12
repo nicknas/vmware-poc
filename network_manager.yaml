@@ -1,6 +1,6 @@
 ---
 - name: Manage Network
-  hosts: localhost
+  hosts: "{{ vm_name }}"
   connection: local
   gather_facts: false
   collections:
