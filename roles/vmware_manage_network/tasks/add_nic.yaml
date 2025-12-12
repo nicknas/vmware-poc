@@ -38,13 +38,12 @@
     name: "{{ vm_name }}"
     datacenter: "{{ datacenter }}"
   until: >
-    expected_mac_address in 
-    (
-      vm_info.instance.values() 
-      | selectattr('macaddress', 'defined') 
-      | map(attribute='macaddress') 
-      | list
-    )
+    vm_info.instance.values()
+    | selectattr('macaddress', 'defined')
+    | selectattr('macaddress', 'equalto', expected_mac_address)
+    | map(attribute='ipaddresses')
+    | flatten
+    | length > 0
   retries: 20   # Try 20 times
   delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
   delegate_to: localhost     
