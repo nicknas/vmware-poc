@@ -66,7 +66,8 @@
     vm_info.instance.guest_net is defined and
     expected_mac_address in (vm_info.instance.guest_net | map(attribute='mac_address') | list)
   retries: 20   # Try 20 times
-  delay: 6      # Wait 6 seconds between tries (Total wait: ~2 mins)
+  delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
+  delegate_to: localhost     
 
 # -------------------------------------------------------
 # TASK 4: Final Confirmation (Optional IP Check)
