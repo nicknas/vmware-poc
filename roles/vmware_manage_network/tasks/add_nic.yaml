@@ -25,7 +25,7 @@
         | selectattr('network_name', 'equalto', network_name)
         | map(attribute='mac_address')
         | list
-        | first
+        | last
       }}
   delegate_to: localhost
 
