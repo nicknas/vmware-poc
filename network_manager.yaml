@@ -1,7 +1,6 @@
 ---
 - name: Manage Network
   hosts: "{{ vm_name }}"
-  connection: local
   gather_facts: false
   collections:
     - community.vmware
