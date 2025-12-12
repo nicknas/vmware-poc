@@ -5,6 +5,3 @@
 
 - name: Add Network Interface
   ansible.builtin.include_tasks: add_nic.yaml
-
-# - name: Validate Network Interface on the VM
-#   ansible.builtin.include_tasks: verify_nic.yaml

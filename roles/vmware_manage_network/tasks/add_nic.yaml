@@ -14,7 +14,6 @@
     device_type: "{{ nic_device_type }}"
     state: present
     connected: true
-  delegate_to: localhost
   register: nic_result
 
 - name: Calculate Highest Adapter ID
@@ -56,7 +55,6 @@
     | length > 0
   retries: 20   # Try 20 times
   delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
-  delegate_to: localhost     
   register: vm_info
 
 - name: Debug - Expected MAC
