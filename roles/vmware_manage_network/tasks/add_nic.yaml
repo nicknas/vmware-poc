@@ -17,22 +17,6 @@
   delegate_to: localhost
   register: nic_result
 
-- name: Gather VM Facts from vCenter
-  # We need to refresh vCenter info to get the generated MAC address
-  community.vmware.vmware_guest_info:
-    hostname: "{{ vcenter_hostname }}"
-    username: "{{ vcenter_user}}"
-    password: "{{ vcenter_password }}"
-    name: "{{ vm_name }}"
-    datacenter: "{{ datacenter }}"
-  until: >
-    vm_info.instance.guest_net is defined and
-    expected_mac_address in (vm_info.instance.guest_net | map(attribute='mac_address') | list)
-  retries: 20   # Try 20 times
-  delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
-  delegate_to: localhost     
-  register: vm_info
-
 - name: Extract New MAC Address (From network_info)
   ansible.builtin.set_fact:
     expected_mac_address: >-
@@ -44,6 +28,27 @@
         | first
       }}
   delegate_to: localhost
+
+- name: Gather VM Facts from vCenter
+  # We need to refresh vCenter info to get the generated MAC address
+  community.vmware.vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user}}"
+    password: "{{ vcenter_password }}"
+    name: "{{ vm_name }}"
+    datacenter: "{{ datacenter }}"
+  until: >
+    expected_mac_address in 
+    (
+      vm_info.instance.values() 
+      | selectattr('macaddress', 'defined') 
+      | map(attribute='macaddress') 
+      | list
+    )
+  retries: 20   # Try 20 times
+  delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
+  delegate_to: localhost     
+  register: vm_info
 
 - name: Debug - Expected MAC
   ansible.builtin.debug:
