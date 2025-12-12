@@ -57,7 +57,7 @@
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
-    name: "{{ target_vm_name }}"
+    name: "{{ vm_name }}"
   register: vm_info
   # Loop Condition:
   # Keep retrying until 'expected_mac_address' appears inside the 
