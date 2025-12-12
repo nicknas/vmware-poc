@@ -22,6 +22,13 @@
       - "Interfaces found: {{ ansible_facts.interfaces | default('None detected') }}"
       - "Expected MAC: {{ expected_mac_address }}"
 
+- name: Debug - Display ansible_facts data
+  ansible.builtin.debug:
+    # FIX: We access 'interfaces' via the 'ansible_facts' dictionary.
+    # This prevents the 'undefined variable' error when facts are not injected as top-level vars.
+    msg: 
+      - "Data from ansible_facts: {{ ansible_facts }}"
+
 - name: Assert that the new MAC address is present in the OS
   ansible.builtin.assert:
     that:
