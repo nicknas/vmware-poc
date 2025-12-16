@@ -23,9 +23,8 @@
 - name: Create Thin Pool (if not exists)
   community.general.lvol:
     vg: "{{ vg_name }}"
-    lv: "{{ thin_pool }}"
+    thinpool: "{{ thin_pool }}"
     size: "95%VG"
-    opts: "--type thin-pool"
   when:
     - thin_pool | length > 0
     - thin_pool_check.rc != 0
