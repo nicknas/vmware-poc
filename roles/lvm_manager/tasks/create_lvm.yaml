@@ -3,7 +3,7 @@
   command: "lvs {{ vg_name }}/{{ thin_pool }} --noheadings"
   register: thin_pool_check
   changed_when: false
-  failed_when: thin_pool_check.rc != 0
+  ignore_errors: true
   when: thin_pool | length > 0
 
 - name: Create or extend VG (this also creates PV if missing)
@@ -19,6 +19,16 @@
     pvs:
       - "{{ lvm_disk_path }}"
     state: present
+
+- name: Create Thin Pool (if not exists)
+  community.general.lvol:
+    vg: "{{ vg_name }}"
+    lv: "{{ thin_pool }}"
+    size: "95%VG"
+    opts: "--type thin-pool"
+  when:
+    - thin_pool | length > 0
+    - thin_pool_check.rc != 0
 
 - name: Create LV
   community.general.lvol:
