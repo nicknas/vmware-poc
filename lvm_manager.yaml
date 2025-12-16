@@ -2,6 +2,7 @@
 - name: LVM manager for the new disk
   hosts: nodes
   gather_facts: true
+  become: true
   collections:
     - community.general
     - ansible.posix
