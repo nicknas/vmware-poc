@@ -21,7 +21,7 @@
       }}
 
 - name: "VALIDATION: Check if Disk Exists"
-  assert:
+  ansible.builtin.assert:
     that:
       - target_disk_data is not none
     fail_msg: >-
@@ -48,13 +48,13 @@
     extension_needed_gb: "{{ disk_size_gb | int - current_size_gb | float }}"
   block:
     - name: "Check: Is target size larger than current size?"
-      assert:
+      ansible.builtin.assert:
         that: 
           - "disk_size_gb | int > current_size_gb | float"
         fail_msg: "Target size ({{ disk_size_gb }}GB) is not larger than current size ({{ current_size_gb }}GB)."
 
     - name: "Check: Is there enough space on Datastore?"
-      assert:
+      ansible.builtin.assert:
         that:
           - "free_space_gb | float > extension_needed_gb | float"
         fail_msg: "Not enough space on {{ target_disk_data.backing_datastore }}. Needed: {{ extension_needed_gb }}GB, Available: {{ free_space_gb }}GB."

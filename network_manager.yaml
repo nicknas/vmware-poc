@@ -1,12 +1,12 @@
 ---
-- name: Manage Disk
+- name: Manage Network
   hosts: localhost
   connection: local
   gather_facts: false
   collections:
     - community.vmware
   roles:
-    - role: vmware_manage_disk
+    - role: vmware_manage_network
       vars:
         vcenter_hostname: '{{ lookup("env", "VMWARE_HOST") }}'
         vcenter_user: '{{ lookup("env", "VMWARE_USER") }}'

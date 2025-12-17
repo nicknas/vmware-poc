@@ -1,0 +1,62 @@
+---
+# tasks/add_nic.yml
+
+- name: Add Network Interface via vCenter
+  # Adds the NIC without modifying existing hardware configuration
+  community.vmware.vmware_guest_network:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user }}"
+    password: "{{ vcenter_password }}"
+    name: "{{ vm_name }}"
+    datacenter: "{{ datacenter }}"
+    network_name: "{{ network_name }}"
+    label: "label"
+    device_type: "{{ nic_device_type }}"
+    state: present
+    connected: true
+  register: nic_result
+
+- name: Calculate Highest Adapter ID
+  ansible.builtin.set_fact:
+    max_adapter_id: >-
+      {{
+        nic_result.network_info
+        | map(attribute='label')
+        | map('regex_replace', '^Network adapter ', '')
+        | map('int')
+        | max
+      }}
+
+- name: Extract MAC Address of Highest Label
+  ansible.builtin.set_fact:
+    expected_mac_address: >-
+      {{
+        nic_result.network_info
+        | selectattr('label', 'equalto', 'Network adapter ' ~ max_adapter_id)
+        | map(attribute='mac_address')
+        | list
+        | first
+      }}
+
+- name: Gather VM Facts from vCenter
+  # We need to refresh vCenter info to get the generated MAC address
+  community.vmware.vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_user}}"
+    password: "{{ vcenter_password }}"
+    name: "{{ vm_name }}"
+    datacenter: "{{ datacenter }}"
+  until: >
+    vm_info.instance.values()
+    | selectattr('macaddress', 'defined')
+    | selectattr('macaddress', 'equalto', expected_mac_address)
+    | map(attribute='ipaddresses')
+    | flatten
+    | length > 0
+  retries: 20   # Try 20 times
+  delay: 6  # Wait 6 seconds between tries (Total wait: ~2 mins)
+  register: vm_info
+
+- name: Debug - Expected MAC
+  ansible.builtin.debug:
+    msg: "vCenter assigned MAC {{ expected_mac_address }} to network {{ network_name }}"
