@@ -1,0 +1,7 @@
+---
+- name: Create Network
+  ansible.builtin.include_tasks: create_network.yaml
+  when: create_network == "Yes"
+
+- name: Add Network Interface
+  ansible.builtin.include_tasks: add_nic.yaml

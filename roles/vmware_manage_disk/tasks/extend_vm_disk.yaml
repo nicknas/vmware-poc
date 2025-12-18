@@ -1,6 +1,6 @@
 ---
 - name: Get info about the VM's current disks
-  vmware_guest_disk_info:
+  community.vmware.vmware_guest_disk_info:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
@@ -10,7 +10,7 @@
   register: vm_disk_facts
 
 - name: Find the specific disk by Controller and Unit Number
-  set_fact:
+  ansible.builtin.set_fact:
     # We convert the dict to a list (.values()) and filter by your survey inputs
     target_disk_data: >-
       {{
@@ -21,7 +21,7 @@
       }}
 
 - name: "VALIDATION: Check if Disk Exists"
-  assert:
+  ansible.builtin.assert:
     that:
       - target_disk_data is not none
     fail_msg: >-
@@ -30,7 +30,7 @@
       Available disks: {{ vm_disk_facts.guest_disk_info.values() | map(attribute='label') | list }}
 
 - name: Get info about the Datastore (for space check)
-  vmware_datastore_info:
+  community.vmware.vmware_datastore_info:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
@@ -48,19 +48,19 @@
     extension_needed_gb: "{{ disk_size_gb | int - current_size_gb | float }}"
   block:
     - name: "Check: Is target size larger than current size?"
-      assert:
+      ansible.builtin.assert:
         that: 
           - "disk_size_gb | int > current_size_gb | float"
         fail_msg: "Target size ({{ disk_size_gb }}GB) is not larger than current size ({{ current_size_gb }}GB)."
 
     - name: "Check: Is there enough space on Datastore?"
-      assert:
+      ansible.builtin.assert:
         that:
           - "free_space_gb | float > extension_needed_gb | float"
         fail_msg: "Not enough space on {{ target_disk_data.backing_datastore }}. Needed: {{ extension_needed_gb }}GB, Available: {{ free_space_gb }}GB."
 
 - name: Extend the VM Disk
-  vmware_guest_disk:
+  community.vmware.vmware_guest_disk:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_user }}"
     password: "{{ vcenter_password }}"
